@@ -1,0 +1,47 @@
+function bit_rate = hvlci(yuv_file,nrows,ncolms,nframes)
+
+% Function to compute the visually lossless bit-rate for H.264
+% compressed videos.
+% Inputs:
+% yuv_file = filename of yuv file to be compressed -- assumed to be YUV420p
+% nrows = number of rows in one frame
+% ncolms = number of colms in one frame
+% nframes = number of frames of video
+num_scales = 3;
+num_or = 8;
+
+fid = fopen(yuv_file,'rb');
+tic
+j = 1; l = 1;
+si_all = []; ti_all = [];
+while(j<=nframes)
+    frame = fread(fid,nrows*ncolms*1.5,'uchar'); j = j+1;
+    frame = reshape(frame(1:nrows*ncolms),ncolms,nrows)';
+    % Texture feature
+    [pyr1, pind] = buildSFpyr(frame, num_scales, or-1);
+    l = 1; clear feature
+    for p = 1:num_scales
+        for k =1:or
+            bandind = k+(p-1)*or+1;
+            subband =  pyrBand(pyr1, pind, bandind);
+            feature(l,j) = kurtosis(subband(:));
+            l = l+1;
+        end
+    end
+
+    
+    
+    chunk(:,:,l) = frame; l = l+1;
+    if(l>chunk_length)
+        [si ti] = compute_activity(chunk);
+        l = 1;
+        si_all = [si_all si];
+        ti_all = [ti_all ti];
+        clear chunk
+    end
+
+end
+fclose(fid);
+si_vid) = mean(si_all);
+ti_vid = mean(ti_all);
+texture = mean2(feature);
